@@ -3,31 +3,65 @@ import torch.nn as nn
 from transformers import BertModel, BertTokenizer
 
 class SentenceTransformer(nn.Module):
+    """
+    A sentence transformer model based on BERT for generating sentence embeddings.
+    """
+
     def __init__(self, bert_model_name='bert-base-uncased', embedding_dim=768):
+        """
+        Initialize the SentenceTransformer model.
+
+        Args:
+            bert_model_name (str): Name of the pre-trained BERT model to use.
+            embedding_dim (int): Dimension of the output sentence embedding.
+        """
         super(SentenceTransformer, self).__init__()
         self.bert = BertModel.from_pretrained(bert_model_name)
         self.tokenizer = BertTokenizer.from_pretrained(bert_model_name)
         self.fc = nn.Linear(self.bert.config.hidden_size, embedding_dim)
         
     def forward(self, input_ids, attention_mask):
+        """
+        Forward pass of the model.
+
+        Args:
+            input_ids (torch.Tensor): Tokenized input sentences.
+            attention_mask (torch.Tensor): Attention mask for the input.
+
+        Returns:
+            torch.Tensor: Sentence embedding.
+        """
         outputs = self.bert(input_ids=input_ids, attention_mask=attention_mask)
         pooled_output = outputs.pooler_output
         sentence_embedding = self.fc(pooled_output)
         return sentence_embedding
     
     def encode(self, sentences):
+        """
+        Encode a list of sentences into embeddings.
+
+        Args:
+            sentences (List[str]): List of input sentences.
+
+        Returns:
+            torch.Tensor: Tensor of sentence embeddings.
+        """
+        # Tokenize and encode the input sentences
         encoded_input = self.tokenizer(sentences, padding=True, truncation=True, return_tensors='pt')
+        
+        # Generate embeddings without gradient computation
         with torch.no_grad():
             sentence_embeddings = self.forward(encoded_input['input_ids'], encoded_input['attention_mask'])
+        
         return sentence_embeddings
 
 # Test the implementation
 if __name__ == "__main__":
     model = SentenceTransformer()
     sample_sentences = [
-        "The quick brown fox jumps over the lazy dog.",
-        "I love natural language processing!",
-        "Transformers have revolutionized NLP tasks."
+        "Sebastian Vettel is a 4 time world champion",
+        "Michael Schumacher is the greatest driver of all time",
+        "Max Verstappen is the current world champion"
     ]
     embeddings = model.encode(sample_sentences)
     print("Sample sentence embeddings:")
@@ -35,32 +69,14 @@ if __name__ == "__main__":
     print("Embedding shape:", embeddings.shape)
 
 """
-Choices made regarding the model architecture outside of the transformer backbone:
+Key architectural choices:
 
-1. Embedding dimension: We chose to use a default embedding dimension of 768, which matches
-   the hidden size of BERT-base. This allows us to directly use the output of BERT's pooler
-   layer if needed. However, we added a linear layer (self.fc) to allow flexibility in
-   changing the embedding dimension if required.
-
-2. Pooling strategy: We used the pooled output from BERT, which is typically the [CLS] token
-   representation. This choice was made because it's a common and effective way to get a
-   fixed-length representation of the entire sentence. Alternative strategies could include
-   mean pooling or max pooling over all token embeddings.
-
-3. Additional layers: We chose to use a single linear layer (self.fc) after the BERT output.
-   This allows for dimensionality reduction if needed and adds a small amount of task-specific
-   learning capacity. We could have added more complexity here, such as multiple layers or
-   non-linearities, but opted for simplicity given that BERT already provides rich representations.
-
-4. No fine-tuning flag: We didn't include an option to freeze BERT layers. This could be added
-   as a parameter to the constructor if we want to use the model purely as a feature extractor
-   without fine-tuning.
-
-5. Tokenization: We use the BERT tokenizer for consistency with the pre-trained model. The
-   tokenization is handled in the encode method, which allows for easy use of the model with
-   raw text input.
+1. Embedding dimension: Default 768 (BERT-base hidden size), adjustable via linear layer.
+2. Pooling: Using BERT's [CLS] token representation (pooled output).
+3. Additional layer: Single linear layer for dimensionality adjustment and task-specific learning.
+4. Fine-tuning: BERT layers not frozen by default, allowing full model fine-tuning.
+5. Tokenization: Using BERT tokenizer for consistency, integrated into the encode method.
 
 These choices balance simplicity, flexibility, and effectiveness for a general-purpose
-sentence transformer model. Depending on the specific use case, these could be adjusted
-or expanded upon.
+sentence transformer model.
 """

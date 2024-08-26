@@ -73,8 +73,8 @@ if __name__ == "__main__":
     output_a, output_b = model(input_ids, attention_mask)
     
     # Print output shapes
-    print("Task A output shape:", output_a.shape)
-    print("Task B output shape:", output_b.shape)
+    print("Sentence classification output shape:", output_a.shape)
+    print("Named Entity Recognition output shape:", output_b.shape)
 
 """
 Key changes for multi-task learning:
