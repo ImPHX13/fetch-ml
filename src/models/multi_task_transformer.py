@@ -7,7 +7,11 @@ class MultiTaskTransformer(nn.Module):
         super(MultiTaskTransformer, self).__init__()
         self.sentence_transformer = SentenceTransformer(bert_model_name, embedding_dim)
         self.classifier_a = nn.Linear(embedding_dim, num_classes_a)
-        self.classifier_b = nn.Linear(embedding_dim, num_classes_b)
+        self.classifier_b = nn.Sequential(
+            nn.Linear(embedding_dim, embedding_dim // 2),
+            nn.ReLU(),
+            nn.Linear(embedding_dim // 2, num_classes_b)
+        )
         
     def forward(self, input_ids, attention_mask):
         sentence_embedding = self.sentence_transformer(input_ids, attention_mask)
