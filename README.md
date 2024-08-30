@@ -43,7 +43,7 @@ This will execute the `main.py` script, which demonstrates the Sentence Transfor
 - `src/train/layer_wise_lr.py`: Implementation of Layer-wise Learning Rate
 - `main.py`: Main script that orchestrates and demonstrates all components
 
-## Task 3: Training Considerations - Key Decisions and Insights
+## Training Considerations - Key Decisions and Insights
 
 When considering different freezing scenarios for the multi-task transformer model, I made the following key decisions:
 
@@ -67,7 +67,7 @@ For transfer learning, I chose to:
 
 This approach leverages general language understanding while allowing adaptation to specific tasks, balancing efficiency and performance.
 
-## Task 4: Layer-wise Learning Rate - Key Decisions and Insights
+## Layer-wise Learning Rate - Key Decisions and Insights
 
 Implementing layer-wise learning rates for our multi-task transformer led to several important insights:
 
